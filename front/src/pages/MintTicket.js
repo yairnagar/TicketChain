@@ -15,31 +15,27 @@ function MintTicket({ contract }) {
       setError('Contract is not initialized. Please connect your wallet and try again.');
       return;
     }
-
+  
     try {
       setIsLoading(true);
       setError(null);
-
-      const signer = await contract.runner.provider.getSigner();
-      const signerAddress = await signer.getAddress();
-
-      const tx = await contract.mintTicket(
-        signerAddress,
-        eventName,
-        Math.floor(new Date(eventDate).getTime() / 1000),
-        seat,
-        '' // tokenURI
-      );
-
-      await tx.wait();
-
-      const receipt = await contract.runner.provider.getTransactionReceipt(tx.hash);
-      const tokenId = receipt.logs[0].topics[3];
-
-      setLastMintedTokenId(parseInt(tokenId, 16));
+  
+      const eventDateTimestamp = Math.floor(new Date(eventDate).getTime() / 1000);
+  
+      console.log('Minting ticket with params:', eventName, eventDateTimestamp, seat);
+      
+      const tx = await contract.mintTicket(eventName, eventDateTimestamp, seat);
+      console.log('Transaction sent:', tx.hash);
+  
+      const receipt = await tx.wait();
+      console.log('Transaction receipt:', receipt);
+  
+      // If we reach this point, the transaction was successful
+      setLastMintedTokenId(parseInt(receipt.logs[0].topics[3])); // This should be the token ID
       setEventName('');
       setEventDate('');
       setSeat('');
+      setError(null);
     } catch (error) {
       console.error('Error minting ticket:', error);
       setError(`Failed to mint ticket: ${error.message}`);

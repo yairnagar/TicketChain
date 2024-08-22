@@ -84,7 +84,7 @@ function WalletConnection({ onConnected }) {
   };
 
   return (
-    <div className="bg-white shadow-md py-4 mb-8">
+    <div className="bg-blue shadow-md py-4 mb-8">
       <div className="container mx-auto px-4">
         {connectedAddress ? (
           <div className="flex items-center justify-between">

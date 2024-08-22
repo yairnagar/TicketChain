@@ -20,10 +20,9 @@ contract TicketMarketplace is ReentrancyGuard, Ownable {
     event TicketSold(uint256 tokenId, uint256 price, address seller, address buyer);
     event ListingCancelled(uint256 tokenId, address seller);
 
-    constructor(address _nftContract) {
-        nftContract = IERC721(_nftContract);
-    }
-    
+constructor(address _nftContract) {
+    nftContract = IERC721(_nftContract);
+}
     function listTicket(uint256 tokenId, uint256 price) external {
         require(nftContract.ownerOf(tokenId) == msg.sender, "Not the ticket owner");
         require(nftContract.getApproved(tokenId) == address(this), "Marketplace not approved");
@@ -75,6 +74,29 @@ contract TicketMarketplace is ReentrancyGuard, Ownable {
         }
 
         return (tokenIds, prices, sellers);
+    }
+
+    function getUserListedTickets(address user) public view returns (uint256[] memory, uint256[] memory) {
+        uint256 count = 0;
+        for (uint i = 0; i < listedTokenIds.length; i++) {
+            if (listings[listedTokenIds[i]].seller == user) {
+                count++;
+            }
+        }
+
+        uint256[] memory userTokenIds = new uint256[](count);
+        uint256[] memory userPrices = new uint256[](count);
+
+        uint256 index = 0;
+        for (uint i = 0; i < listedTokenIds.length; i++) {
+            if (listings[listedTokenIds[i]].seller == user) {
+                userTokenIds[index] = listedTokenIds[i];
+                userPrices[index] = listings[listedTokenIds[i]].price;
+                index++;
+            }
+        }
+
+        return (userTokenIds, userPrices);
     }
 
     function _removeTokenFromList(uint256 tokenId) private {

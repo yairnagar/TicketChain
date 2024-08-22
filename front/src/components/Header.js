@@ -16,8 +16,8 @@ function Header() {
             <NavLink to="/">Home</NavLink>
             <NavLink to="/mint">Mint Ticket</NavLink>
             <NavLink to="/list">List Ticket</NavLink>
-            <NavLink to="/available">Available Tickets</NavLink>
-            <NavLink to="/dashboard">Dashboard</NavLink>
+            <NavLink to="/marketplace">Marketplace</NavLink>
+            <NavLink to="/mytickets">My Tickets</NavLink>
           </nav>
           <button
             className="md:hidden text-gray-600 hover:text-primary-600 transition-colors duration-300"
@@ -33,8 +33,8 @@ function Header() {
             <NavLink to="/" onClick={() => setIsMenuOpen(false)}>Home</NavLink>
             <NavLink to="/mint" onClick={() => setIsMenuOpen(false)}>Mint Ticket</NavLink>
             <NavLink to="/list" onClick={() => setIsMenuOpen(false)}>List Ticket</NavLink>
-            <NavLink to="/available" onClick={() => setIsMenuOpen(false)}>Available Tickets</NavLink>
-            <NavLink to="/dashboard" onClick={() => setIsMenuOpen(false)}>Dashboard</NavLink>
+            <NavLink to="/marketplace" onClick={() => setIsMenuOpen(false)}>Marketplace</NavLink>
+            <NavLink to="/mytickets" onClick={() => setIsMenuOpen(false)}>My Tickets</NavLink>
           </nav>
         </div>
       )}

@@ -72,8 +72,8 @@
       "artifacts": []
     },
     "/Users/yairnagar/Desktop/BlockTicket/contracts/TicketMarketplace.sol": {
-      "lastModificationDate": 1724250975102,
-      "contentHash": "25c821f60d5882d9ab8885e366de1255",
+      "lastModificationDate": 1724330696007,
+      "contentHash": "d688301415032234737288cbd50c3690",
       "sourceName": "contracts/TicketMarketplace.sol",
       "solcConfig": {
         "version": "0.8.19",
@@ -661,8 +661,8 @@
       ]
     },
     "/Users/yairnagar/Desktop/BlockTicket/contracts/TicketNFT.sol": {
-      "lastModificationDate": 1724258753138,
-      "contentHash": "edacaad7da814ee65fffa9c9155655ea",
+      "lastModificationDate": 1724334607076,
+      "contentHash": "baa222725a4d66f18f43c744a4c45db4",
       "sourceName": "contracts/TicketNFT.sol",
       "solcConfig": {
         "version": "0.8.19",
@@ -689,7 +689,7 @@
       },
       "imports": [
         "@openzeppelin/contracts/token/ERC721/ERC721.sol",
-        "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
+        "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol",
         "@openzeppelin/contracts/access/Ownable.sol",
         "@openzeppelin/contracts/utils/Counters.sol"
       ],
@@ -733,6 +733,81 @@
       ],
       "artifacts": [
         "Counters"
+      ]
+    },
+    "/Users/yairnagar/Desktop/BlockTicket/node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol": {
+      "lastModificationDate": 1724160091535,
+      "contentHash": "f4dd06783f321aa26179bc2b6e361c29",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC721.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IERC721Enumerable"
+      ]
+    },
+    "/Users/yairnagar/Desktop/BlockTicket/node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol": {
+      "lastModificationDate": 1724160091503,
+      "contentHash": "212e86880d210b6cac8c3eb0cd6b1fad",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../ERC721.sol",
+        "./IERC721Enumerable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ERC721Enumerable"
       ]
     }
   }

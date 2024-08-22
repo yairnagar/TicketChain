@@ -10,8 +10,8 @@ import AvailableTickets from './pages/AvailableTickets';
 import UserDashboard from './pages/UserDashboard';
 import BuyTicket from './pages/BuyTicket';
 
-const TICKET_NFT_ADDRESS = '0xbdF47E7C78fe7c3A35096F8ccF57Bc4ed42dDd39';
-const TICKET_MARKETPLACE_ADDRESS = '0x3B1F90898bDFDA881f896ab39563EE9ef07E868F';
+const TICKET_NFT_ADDRESS = '0x97e6a6848f808F1fb84ff3Ff9161d3f6E049b51f';
+const TICKET_MARKETPLACE_ADDRESS = '0x0ca7AEfd792c077cb9d83179144a6A3678f0DaDA';
 
 const TICKET_NFT_ABI = [
   {
@@ -73,38 +73,6 @@ const TICKET_NFT_ABI = [
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_fromTokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_toTokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "BatchMetadataUpdate",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "MetadataUpdate",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
         "internalType": "address",
         "name": "previousOwner",
@@ -118,6 +86,43 @@ const TICKET_NFT_ABI = [
       }
     ],
     "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "eventName",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "eventDate",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "seat",
+        "type": "string"
+      }
+    ],
+    "name": "TicketMinted",
     "type": "event"
   },
   {
@@ -270,11 +275,6 @@ const TICKET_NFT_ABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
-      },
-      {
         "internalType": "string",
         "name": "eventName",
         "type": "string"
@@ -287,11 +287,6 @@ const TICKET_NFT_ABI = [
       {
         "internalType": "string",
         "name": "seat",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "tokenURI",
         "type": "string"
       }
     ],
@@ -463,6 +458,49 @@ const TICKET_NFT_ABI = [
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenByIndex",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenOfOwnerByIndex",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
       }
@@ -473,6 +511,19 @@ const TICKET_NFT_ABI = [
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -674,6 +725,30 @@ const TICKET_MARKETPLACE_ABI = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getUserListedTickets",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
@@ -791,7 +866,6 @@ function App() {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
-        
         const nftContract = new ethers.Contract(TICKET_NFT_ADDRESS, TICKET_NFT_ABI, signer);
         setTicketNFTContract(nftContract);
 
@@ -823,9 +897,9 @@ function App() {
               <Route path="/" element={<Home connectedAddress={connectedAddress} />} />
               <Route path="/mint" element={<MintTicket contract={ticketNFTContract} />} />
               <Route path="/list" element={<ListTicket contract={marketplaceContract} nftContract={ticketNFTContract} />} />
-              <Route path="/available" element={<AvailableTickets marketplaceContract={marketplaceContract} nftContract={ticketNFTContract} />} />
+              <Route path="/marketplace" element={<AvailableTickets marketplaceContract={marketplaceContract} nftContract={ticketNFTContract} />} />
               <Route path="/buy/:tokenId" element={<BuyTicket contract={marketplaceContract} nftContract={ticketNFTContract} />} />
-              <Route path="/dashboard" element={<UserDashboard nftContract={ticketNFTContract} marketplaceContract={marketplaceContract} connectedAddress={connectedAddress} />} />
+              <Route path="/mytickets" element={<UserDashboard nftContract={ticketNFTContract} marketplaceContract={marketplaceContract} connectedAddress={connectedAddress} />} />
             </Routes>
           ) : (
             <div className="text-center">

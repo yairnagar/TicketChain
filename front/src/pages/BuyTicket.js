@@ -41,17 +41,14 @@ function BuyTicket({ contract, nftContract }) {
 
   const handleBuyTicket = async () => {
     if (!contract) return;
-
+  
     try {
       setIsLoading(true);
       const priceInWei = parseEther(price);
       const tx = await contract.buyTicket(tokenId, { value: priceInWei });
       await tx.wait();
-
-      // Show success message
+  
       alert('Ticket purchased successfully!');
-      
-      // Redirect to home page
       navigate('/');
     } catch (error) {
       setError(`Failed to purchase ticket: ${error.message}`);
