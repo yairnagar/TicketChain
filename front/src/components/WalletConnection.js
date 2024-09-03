@@ -6,18 +6,21 @@ function WalletConnection({ onConnected }) {
   const [copied, setCopied] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState(null);
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState(true);
 
   useEffect(() => {
     checkIfWalletIsConnected();
+    checkNetwork();
 
     if (window.ethereum) {
       window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', () => window.location.reload());
+      window.ethereum.on('chainChanged', handleChainChanged);
     }
 
     return () => {
       if (window.ethereum) {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
       }
     };
   }, []);
@@ -33,6 +36,18 @@ function WalletConnection({ onConnected }) {
         console.error("An error occurred while checking the wallet connection:", error);
       }
     }
+  }
+
+  async function checkNetwork() {
+    if (window.ethereum) {
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      setIsCorrectNetwork(chainId === '0xaa36a7'); // Sepolia testnet
+    }
+  }
+
+  function handleChainChanged(chainId) {
+    setIsCorrectNetwork(chainId === '0xaa36a7'); // Sepolia testnet
+    window.location.reload();
   }
 
   async function connectWallet() {
@@ -80,11 +95,11 @@ function WalletConnection({ onConnected }) {
   };
 
   const openEtherscan = () => {
-    window.open(`https://etherscan.io/address/${connectedAddress}`, '_blank');
+    window.open(`https://sepolia.etherscan.io/address/${connectedAddress}`, '_blank');
   };
 
   return (
-    <div className="bg-blue shadow-md py-4 mb-8">
+    <div className="bg-blue-100 shadow-md py-4 mb-8">
       <div className="container mx-auto px-4">
         {connectedAddress ? (
           <div className="flex items-center justify-between">
@@ -110,6 +125,11 @@ function WalletConnection({ onConnected }) {
                 <ExternalLink size={18} />
               </button>
             </div>
+            {!isCorrectNetwork && (
+              <div className="text-red-500 text-sm">
+                Please switch to the Sepolia testnet
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center">

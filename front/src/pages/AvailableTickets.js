@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, Calendar, MapPin, Bitcoin, RefreshCw } from 'lucide-react';
-import { formatEther } from 'ethers';
+import { Ticket, Calendar, MapPin, Bitcoin, RefreshCw, Tag } from 'lucide-react';
+import { ethers } from 'ethers';
 
 function AvailableTickets({ marketplaceContract, nftContract }) {
   const [tickets, setTickets] = useState([]);
@@ -19,23 +19,25 @@ function AvailableTickets({ marketplaceContract, nftContract }) {
     setIsLoading(true);
     setError(null);
     try {
-      const [tokenIds, prices, sellers] = await marketplaceContract.getAllListedTickets();
+      const [tokenIds, prices, sellers, eventTypes] = await marketplaceContract.getAllListedTickets();
 
       const ticketsDetails = await Promise.all(tokenIds.map(async (tokenId, index) => {
-        const [eventName, eventDate, seat] = await nftContract.getTicketDetails(tokenId);
+        const [eventName, eventDate, , seatingInfo] = await nftContract.getTicketDetails(tokenId);
 
         return {
           tokenId: tokenId.toString(),
-          price: formatEther(prices[index]),
+          price: ethers.formatEther(prices[index]),
           seller: sellers[index],
           eventName,
           eventDate: new Date(Number(eventDate) * 1000).toLocaleDateString(),
-          seat
+          eventType: Number(eventTypes[index]),
+          seatingInfo
         };
       }));
 
       setTickets(ticketsDetails);
     } catch (error) {
+      console.error('Error fetching tickets:', error);
       setError(`Failed to fetch tickets: ${error.message}`);
     } finally {
       setIsLoading(false);
@@ -44,6 +46,11 @@ function AvailableTickets({ marketplaceContract, nftContract }) {
 
   const handleBuyClick = (tokenId) => {
     navigate(`/buy/${tokenId}`);
+  };
+
+  const getEventTypeName = (eventType) => {
+    const types = ['Private Event', 'Sports Game', 'Show', 'Concert', 'Conference'];
+    return types[eventType] || 'Unknown';
   };
 
   return (
@@ -71,30 +78,34 @@ function AvailableTickets({ marketplaceContract, nftContract }) {
         <p className="text-center text-gray-600">No tickets available</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {tickets.map((ticket, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-md flex flex-col h-64">
+          {tickets.map((ticket) => (
+            <div key={ticket.tokenId} className="bg-white rounded-lg shadow-md flex flex-col">
               <div className="p-4 flex flex-col h-full">
-                <div className="h-[30%] flex items-center">
+                <div className="mb-2">
                   <h3 className="text-lg font-semibold truncate">
                     <Ticket className="h-5 w-5 inline mr-2 text-primary-600" />
                     {ticket.eventName}
                   </h3>
                 </div>
-                <div className="h-[40%] flex flex-col justify-center">
+                <div className="flex-grow">
                   <p className="text-sm text-gray-600 mb-1 flex items-center">
                     <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
                     <span className="truncate">{ticket.eventDate}</span>
                   </p>
                   <p className="text-sm text-gray-600 mb-1 flex items-center">
+                    <Tag className="h-4 w-4 mr-1 flex-shrink-0" />
+                    <span className="truncate">{getEventTypeName(ticket.eventType)}</span>
+                  </p>
+                  <p className="text-sm text-gray-600 mb-1 flex items-center">
                     <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
-                    <span className="truncate">Seat: {ticket.seat}</span>
+                    <span className="truncate">Seat: {ticket.seatingInfo}</span>
                   </p>
                   <p className="text-sm text-gray-600 flex items-center">
                     <Bitcoin className="h-4 w-4 mr-1 flex-shrink-0" />
                     <span className="truncate">Price: {ticket.price} ETH</span>
                   </p>
                 </div>
-                <div className="h-[30%] flex items-end">
+                <div className="mt-4">
                   <button
                     onClick={() => handleBuyClick(ticket.tokenId)}
                     className="btn btn-primary w-full text-sm"

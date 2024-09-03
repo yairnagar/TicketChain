@@ -32,7 +32,7 @@ function Home({ connectedAddress }) {
 
 function FeatureCard({ icon, title, description }) {
   return (
-    <div className="card p-6 flex flex-col items-center text-center">
+    <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center">
       <div className="mb-4">{icon}</div>
       <h3 className="text-xl font-semibold mb-2 text-gray-800">{title}</h3>
       <p className="text-gray-600">{description}</p>

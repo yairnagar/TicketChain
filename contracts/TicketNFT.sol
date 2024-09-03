@@ -2,53 +2,88 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TicketNFT is ERC721Enumerable, Ownable {
+contract TicketNFT is ERC721, ReentrancyGuard, Ownable {
     using Counters for Counters.Counter;
-    Counters.Counter private _ticketIds;
+    Counters.Counter private _tokenIds;
 
-    struct Ticket {
+    enum EventType { PrivateEvent, SportsGame, Show, Concert, Conference }
+
+    struct TicketDetails {
+        uint64 eventDate;
         string eventName;
-        uint256 eventDate;
-        string seat;
+        EventType eventType;
+        string seatingInfo;
     }
 
-    mapping(uint256 => Ticket) private _tickets;
+    mapping(uint256 => TicketDetails) private _tickets;
 
-    event TicketMinted(uint256 indexed tokenId, address indexed owner, string eventName, uint256 eventDate, string seat);
+    event TicketMinted(uint256 indexed tokenId, address indexed owner, string eventName, uint64 eventDate, EventType eventType, string seatingInfo);
+    event BatchTicketsMinted(uint256[] tokenIds, address indexed owner, string eventName, uint64 eventDate, EventType eventType);
+
+    uint256 public constant MAX_BATCH_SIZE = 100;
+    uint256 public mintFee = 0.001 ether;
 
     constructor() ERC721("TicketNFT", "TNFT") {}
 
-    function mintTicket(
+    function mintTicket(string memory eventName, uint64 eventDate, EventType eventType, string memory seatingInfo) public payable nonReentrant returns (uint256) {
+        require(msg.value >= mintFee, "Insufficient mint fee");
+        return _mintSingleTicket(msg.sender, eventName, eventDate, eventType, seatingInfo);
+    }
+
+    function batchMintTickets(
         string memory eventName,
-        uint256 eventDate,
-        string memory seat
-    ) public returns (uint256) {
-        _ticketIds.increment();
-        uint256 newTicketId = _ticketIds.current();
+        uint64 eventDate,
+        EventType eventType,
+        string[] memory seatingInfoList
+    ) public payable nonReentrant returns (uint256[] memory) {
+        uint256 quantity = seatingInfoList.length;
+        require(quantity > 0 && quantity <= MAX_BATCH_SIZE, "Invalid batch size");
+        require(msg.value >= mintFee * quantity, "Insufficient mint fee");
 
-        _safeMint(msg.sender, newTicketId);
-        _tickets[newTicketId] = Ticket(eventName, eventDate, seat);
+        uint256[] memory newTokenIds = new uint256[](quantity);
 
-        emit TicketMinted(newTicketId, msg.sender, eventName, eventDate, seat);
+        for (uint256 i = 0; i < quantity; i++) {
+            newTokenIds[i] = _mintSingleTicket(msg.sender, eventName, eventDate, eventType, seatingInfoList[i]);
+        }
 
-        return newTicketId;
+        emit BatchTicketsMinted(newTokenIds, msg.sender, eventName, eventDate, eventType);
+        return newTokenIds;
     }
 
-    function getTicketDetails(uint256 tokenId) public view returns (string memory, uint256, string memory) {
-        require(_exists(tokenId), "TicketNFT: Query for nonexistent token");
-        Ticket memory ticket = _tickets[tokenId];
-        return (ticket.eventName, ticket.eventDate, ticket.seat);
+    function _mintSingleTicket(
+        address to,
+        string memory eventName,
+        uint64 eventDate,
+        EventType eventType,
+        string memory seatingInfo
+    ) internal returns (uint256) {
+        _tokenIds.increment();
+        uint256 newTokenId = _tokenIds.current();
+
+        _safeMint(to, newTokenId);
+        _tickets[newTokenId] = TicketDetails(eventDate, eventName, eventType, seatingInfo);
+
+        emit TicketMinted(newTokenId, to, eventName, eventDate, eventType, seatingInfo);
+
+        return newTokenId;
     }
 
-    function burn(uint256 tokenId) public {
-        require(_exists(tokenId), "TicketNFT: Token does not exist");
-        require(ownerOf(tokenId) == _msgSender() || getApproved(tokenId) == _msgSender() || isApprovedForAll(ownerOf(tokenId), _msgSender()),
-            "TicketNFT: caller is not owner nor approved");
-        _burn(tokenId);
-        delete _tickets[tokenId];
+    function getTicketDetails(uint256 tokenId) public view returns (string memory, uint64, EventType, string memory) {
+        require(_exists(tokenId), "ERC721: invalid token ID");
+        TicketDetails storage details = _tickets[tokenId];
+        return (details.eventName, details.eventDate, details.eventType, details.seatingInfo);
+    }
+
+    function setMintFee(uint256 newFee) public onlyOwner {
+        mintFee = newFee;
+    }
+
+    function withdrawFees() public onlyOwner {
+        uint256 balance = address(this).balance;
+        payable(owner()).transfer(balance);
     }
 }

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Ticket, Calendar, MapPin } from 'lucide-react';
+import { Ticket, Calendar, MapPin, Tag } from 'lucide-react';
+import { ethers } from 'ethers';
 
 function MintTicket({ contract }) {
   const [eventName, setEventName] = useState('');
   const [eventDate, setEventDate] = useState('');
+  const [eventType, setEventType] = useState(0); // Default to PrivateEvent
   const [seat, setSeat] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -22,18 +24,23 @@ function MintTicket({ contract }) {
   
       const eventDateTimestamp = Math.floor(new Date(eventDate).getTime() / 1000);
   
-      console.log('Minting ticket with params:', eventName, eventDateTimestamp, seat);
+      console.log('Minting ticket with params:', eventName, eventDateTimestamp, eventType, seat);
       
-      const tx = await contract.mintTicket(eventName, eventDateTimestamp, seat);
+      const mintFee = await contract.mintFee();
+      const tx = await contract.mintTicket(eventName, eventDateTimestamp, eventType, seat, { value: mintFee });
       console.log('Transaction sent:', tx.hash);
   
       const receipt = await tx.wait();
       console.log('Transaction receipt:', receipt);
   
-      // If we reach this point, the transaction was successful
-      setLastMintedTokenId(parseInt(receipt.logs[0].topics[3])); // This should be the token ID
+      const mintEvent = receipt.events.find(event => event.event === 'TicketMinted');
+      if (mintEvent) {
+        setLastMintedTokenId(mintEvent.args.tokenId.toString());
+      }
+
       setEventName('');
       setEventDate('');
+      setEventType(0);
       setSeat('');
       setError(null);
     } catch (error) {
@@ -85,6 +92,27 @@ function MintTicket({ contract }) {
                 required
               />
               <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="eventType">
+              Event Type
+            </label>
+            <div className="relative">
+              <select
+                className="input pl-10"
+                id="eventType"
+                value={eventType}
+                onChange={(e) => setEventType(Number(e.target.value))}
+                required
+              >
+                <option value={0}>Private Event</option>
+                <option value={1}>Sports Game</option>
+                <option value={2}>Show</option>
+                <option value={3}>Concert</option>
+                <option value={4}>Conference</option>
+              </select>
+              <Tag className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
           </div>
           <div className="mb-6">

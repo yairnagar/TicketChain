@@ -27,15 +27,14 @@ function ListTicket({ contract, nftContract }) {
     setIsLoading(true);
     setError(null);
     try {
-      // Validate price
       if (!price || isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
         throw new Error('Please enter a valid price greater than 0.');
       }
 
-      // Format price to 18 decimal places (wei)
       const priceInWei = ethers.parseUnits(price, 'ether');
+      const listingFee = await contract.listingFee();
 
-      const tx = await contract.listTicket(tokenId, priceInWei);
+      const tx = await contract.listTicket(tokenId, priceInWei, { value: listingFee });
       await tx.wait();
       setSuccess('Ticket listed successfully!');
       setTokenId('');
@@ -48,7 +47,6 @@ function ListTicket({ contract, nftContract }) {
   };
 
   const handlePriceChange = (e) => {
-    // Allow only numbers and a single decimal point
     const value = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
     setPrice(value);
   };

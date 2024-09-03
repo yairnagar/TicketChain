@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ethers, formatEther, parseEther } from 'ethers';
-import { Ticket, Calendar, MapPin, DollarSign, User, Loader } from 'lucide-react';
+import { ethers } from 'ethers';
+import { Ticket, Calendar, MapPin, DollarSign, User, Loader, Tag } from 'lucide-react';
 
 function BuyTicket({ contract, nftContract }) {
   const { tokenId } = useParams();
@@ -22,17 +22,19 @@ function BuyTicket({ contract, nftContract }) {
     try {
       setIsLoading(true);
       const listing = await contract.listings(tokenId);
-      const [eventName, eventDate, seat] = await nftContract.getTicketDetails(tokenId);
+      const [eventName, eventDate, eventType, seatingInfo] = await nftContract.getTicketDetails(tokenId);
 
       setTicketDetails({
         tokenId,
         eventName,
         eventDate: new Date(Number(eventDate) * 1000).toLocaleDateString(),
-        seat
+        eventType: Number(eventType),
+        seatingInfo
       });
-      setPrice(formatEther(listing.price));
+      setPrice(ethers.formatEther(listing.price));
       setSeller(listing.seller);
     } catch (error) {
+      console.error('Error fetching ticket details:', error);
       setError('Failed to load ticket details.');
     } finally {
       setIsLoading(false);
@@ -44,19 +46,24 @@ function BuyTicket({ contract, nftContract }) {
   
     try {
       setIsLoading(true);
-      const priceInWei = parseEther(price);
+      const priceInWei = ethers.parseEther(price);
       const tx = await contract.buyTicket(tokenId, { value: priceInWei });
       await tx.wait();
   
       alert('Ticket purchased successfully!');
       navigate('/');
     } catch (error) {
+      console.error('Error buying ticket:', error);
       setError(`Failed to purchase ticket: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const getEventTypeName = (eventType) => {
+    const types = ['Private Event', 'Sports Game', 'Show', 'Concert', 'Conference'];
+    return types[eventType] || 'Unknown';
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -76,7 +83,8 @@ function BuyTicket({ contract, nftContract }) {
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">{ticketDetails.eventName}</h3>
             <div className="space-y-3 mb-6">
               <DetailItem icon={<Calendar />} label="Date" value={ticketDetails.eventDate} />
-              <DetailItem icon={<MapPin />} label="Seat" value={ticketDetails.seat} />
+              <DetailItem icon={<Tag />} label="Event Type" value={getEventTypeName(ticketDetails.eventType)} />
+              <DetailItem icon={<MapPin />} label="Seat" value={ticketDetails.seatingInfo} />
               <DetailItem icon={<DollarSign />} label="Price" value={`${price} ETH`} />
               <DetailItem icon={<User />} label="Seller" value={`${seller.slice(0, 6)}...${seller.slice(-4)}`} />
             </div>

@@ -10,8 +10,8 @@ import AvailableTickets from './pages/AvailableTickets';
 import UserDashboard from './pages/UserDashboard';
 import BuyTicket from './pages/BuyTicket';
 
-const TICKET_NFT_ADDRESS = '0x97e6a6848f808F1fb84ff3Ff9161d3f6E049b51f';
-const TICKET_MARKETPLACE_ADDRESS = '0x0ca7AEfd792c077cb9d83179144a6A3678f0DaDA';
+const TICKET_NFT_ADDRESS = '0x1A1CF724F991cbF74354Bf7bBAD25e42B410aD51';
+const TICKET_MARKETPLACE_ADDRESS = '0x7e056941c24c4ef34e0bca9b7ba6cb7aba808978';
 
 const TICKET_NFT_ABI = [
   {
@@ -73,6 +73,43 @@ const TICKET_NFT_ABI = [
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "tokenIds",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "eventName",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "eventDate",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum TicketNFT.EventType",
+        "name": "eventType",
+        "type": "uint8"
+      }
+    ],
+    "name": "BatchTicketsMinted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "previousOwner",
@@ -111,14 +148,20 @@ const TICKET_NFT_ABI = [
       },
       {
         "indexed": false,
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "eventDate",
-        "type": "uint256"
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum TicketNFT.EventType",
+        "name": "eventType",
+        "type": "uint8"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "seat",
+        "name": "seatingInfo",
         "type": "string"
       }
     ],
@@ -149,6 +192,19 @@ const TICKET_NFT_ABI = [
     ],
     "name": "Transfer",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_BATCH_SIZE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [
@@ -190,14 +246,35 @@ const TICKET_NFT_ABI = [
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "eventName",
+        "type": "string"
+      },
+      {
+        "internalType": "uint64",
+        "name": "eventDate",
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum TicketNFT.EventType",
+        "name": "eventType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "string[]",
+        "name": "seatingInfoList",
+        "type": "string[]"
       }
     ],
-    "name": "burn",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "batchMintTickets",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -235,9 +312,14 @@ const TICKET_NFT_ABI = [
         "type": "string"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum TicketNFT.EventType",
+        "name": "",
+        "type": "uint8"
       },
       {
         "internalType": "string",
@@ -273,6 +355,19 @@ const TICKET_NFT_ABI = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "mintFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "string",
@@ -280,13 +375,18 @@ const TICKET_NFT_ABI = [
         "type": "string"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "eventDate",
-        "type": "uint256"
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum TicketNFT.EventType",
+        "name": "eventType",
+        "type": "uint8"
       },
       {
         "internalType": "string",
-        "name": "seat",
+        "name": "seatingInfo",
         "type": "string"
       }
     ],
@@ -298,7 +398,7 @@ const TICKET_NFT_ABI = [
         "type": "uint256"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -425,6 +525,19 @@ const TICKET_NFT_ABI = [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "newFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMintFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes4",
         "name": "interfaceId",
         "type": "bytes4"
@@ -458,49 +571,6 @@ const TICKET_NFT_ABI = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "tokenByIndex",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "tokenOfOwnerByIndex",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
       }
@@ -511,19 +581,6 @@ const TICKET_NFT_ABI = [
         "internalType": "string",
         "name": "",
         "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalSupply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -564,10 +621,17 @@ const TICKET_NFT_ABI = [
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawFees",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
 ];
 
-const TICKET_MARKETPLACE_ABI = [
+const TICKET_MARKETPLACE_ABI =  [
   {
     "inputs": [
       {
@@ -584,12 +648,43 @@ const TICKET_MARKETPLACE_ABI = [
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256[]",
+        "name": "tokenIds",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "prices",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "seller",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum TicketNFT.EventType[]",
+        "name": "eventTypes",
+        "type": "uint8[]"
+      }
+    ],
+    "name": "BatchTicketsListed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "address",
         "name": "seller",
         "type": "address"
@@ -621,7 +716,7 @@ const TICKET_MARKETPLACE_ABI = [
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
@@ -633,10 +728,16 @@ const TICKET_MARKETPLACE_ABI = [
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "address",
         "name": "seller",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum TicketNFT.EventType",
+        "name": "eventType",
+        "type": "uint8"
       }
     ],
     "name": "TicketListed",
@@ -646,7 +747,7 @@ const TICKET_MARKETPLACE_ABI = [
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
@@ -658,20 +759,57 @@ const TICKET_MARKETPLACE_ABI = [
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "address",
         "name": "seller",
         "type": "address"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "address",
         "name": "buyer",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum TicketNFT.EventType",
+        "name": "eventType",
+        "type": "uint8"
       }
     ],
     "name": "TicketSold",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_BATCH_SIZE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "tokenIds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "prices",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "batchListTickets",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
   },
   {
     "inputs": [
@@ -717,30 +855,11 @@ const TICKET_MARKETPLACE_ABI = [
         "internalType": "address[]",
         "name": "",
         "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
-    "name": "getUserListedTickets",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
       },
       {
-        "internalType": "uint256[]",
+        "internalType": "enum TicketNFT.EventType[]",
         "name": "",
-        "type": "uint256[]"
+        "type": "uint8[]"
       }
     ],
     "stateMutability": "view",
@@ -761,7 +880,7 @@ const TICKET_MARKETPLACE_ABI = [
     ],
     "name": "listTicket",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -773,6 +892,19 @@ const TICKET_MARKETPLACE_ABI = [
       }
     ],
     "name": "listedTokenIds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "listingFee",
     "outputs": [
       {
         "internalType": "uint256",
@@ -802,6 +934,11 @@ const TICKET_MARKETPLACE_ABI = [
         "internalType": "address",
         "name": "seller",
         "type": "address"
+      },
+      {
+        "internalType": "enum TicketNFT.EventType",
+        "name": "eventType",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -812,7 +949,7 @@ const TICKET_MARKETPLACE_ABI = [
     "name": "nftContract",
     "outputs": [
       {
-        "internalType": "contract IERC721",
+        "internalType": "contract TicketNFT",
         "name": "",
         "type": "address"
       }
@@ -843,12 +980,32 @@ const TICKET_MARKETPLACE_ABI = [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "newFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "setListingFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawFees",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

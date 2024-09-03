@@ -1,37 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { Calendar, MapPin, Bitcoin, X } from 'lucide-react';
+import { Calendar, MapPin, Bitcoin, X, Tag } from 'lucide-react';
 
-function UserDashboard({ marketplaceContract, nftContract }) {
+function UserDashboard({ marketplaceContract, nftContract, connectedAddress }) {
   const [listedTickets, setListedTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
   useEffect(() => {
-    fetchListedTickets();
-  }, [marketplaceContract, nftContract]);
+    if (marketplaceContract && nftContract && connectedAddress) {
+      fetchListedTickets();
+    }
+  }, [marketplaceContract, nftContract, connectedAddress]);
 
   const fetchListedTickets = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const signer = await marketplaceContract.runner.provider.getSigner();
-      const address = await signer.getAddress();
+      // Fetch all listed tickets
+      const [tokenIds, prices, sellers, eventTypes] = await marketplaceContract.getAllListedTickets();
+      
+      // Filter tickets for the connected address
+      const userListedTickets = await Promise.all(
+        tokenIds.map(async (tokenId, index) => {
+          if (sellers[index].toLowerCase() === connectedAddress.toLowerCase()) {
+            const [eventName, eventDate, , seatingInfo] = await nftContract.getTicketDetails(tokenId);
+            return {
+              tokenId: tokenId.toString(),
+              price: ethers.formatEther(prices[index]),
+              eventName,
+              eventDate: new Date(Number(eventDate) * 1000).toLocaleDateString(),
+              eventType: Number(eventTypes[index]),
+              seatingInfo
+            };
+          }
+          return null;
+        })
+      );
 
-      // Fetch listed tickets
-      const [tokenIds, prices] = await marketplaceContract.getUserListedTickets(address);
-      const listedTicketsResult = await Promise.all(tokenIds.map(async (tokenId, index) => {
-        const [eventName, eventDate, seat] = await nftContract.getTicketDetails(tokenId);
-        return {
-          tokenId: tokenId.toString(),
-          price: ethers.formatEther(prices[index]),
-          eventName,
-          eventDate: new Date(Number(eventDate) * 1000).toLocaleDateString(),
-          seat
-        };
-      }));
-      setListedTickets(listedTicketsResult);
+      // Remove null values (tickets not owned by the user)
+      setListedTickets(userListedTickets.filter(ticket => ticket !== null));
     } catch (error) {
       console.error("Failed to fetch listed tickets:", error);
       setError("Failed to fetch your listed tickets. Please try again.");
@@ -49,10 +58,16 @@ function UserDashboard({ marketplaceContract, nftContract }) {
       setSuccess('Listing canceled successfully!');
       fetchListedTickets(); // Refresh the listed tickets
     } catch (error) {
+      console.error("Failed to cancel listing:", error);
       setError(`Failed to cancel listing: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getEventTypeName = (eventType) => {
+    const types = ['Private Event', 'Sports Game', 'Show', 'Concert', 'Conference'];
+    return types[eventType] || 'Unknown';
   };
 
   if (isLoading) return <div className="text-center">Loading your listed tickets...</div>;
@@ -71,7 +86,8 @@ function UserDashboard({ marketplaceContract, nftContract }) {
             <div key={ticket.tokenId} className="bg-white rounded-lg shadow-md p-4">
               <h3 className="font-semibold text-lg mb-2">{ticket.eventName}</h3>
               <p className="text-gray-600"><Calendar className="inline-block mr-2" size={16} /> {ticket.eventDate}</p>
-              <p className="text-gray-600"><MapPin className="inline-block mr-2" size={16} /> Seat: {ticket.seat}</p>
+              <p className="text-gray-600"><Tag className="inline-block mr-2" size={16} /> {getEventTypeName(ticket.eventType)}</p>
+              <p className="text-gray-600"><MapPin className="inline-block mr-2" size={16} /> Seat: {ticket.seatingInfo}</p>
               <p className="text-gray-600"><Bitcoin className="inline-block mr-2" size={16} /> Price: {ticket.price} ETH</p>
               <button
                 onClick={() => cancelListing(ticket.tokenId)}

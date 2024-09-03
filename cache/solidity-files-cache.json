@@ -72,8 +72,8 @@
       "artifacts": []
     },
     "/Users/yairnagar/Desktop/BlockTicket/contracts/TicketMarketplace.sol": {
-      "lastModificationDate": 1724330696007,
-      "contentHash": "d688301415032234737288cbd50c3690",
+      "lastModificationDate": 1725188212198,
+      "contentHash": "a0a64a9dad724abde6496d8e8955bb41",
       "sourceName": "contracts/TicketMarketplace.sol",
       "solcConfig": {
         "version": "0.8.19",
@@ -101,7 +101,8 @@
       "imports": [
         "@openzeppelin/contracts/token/ERC721/IERC721.sol",
         "@openzeppelin/contracts/security/ReentrancyGuard.sol",
-        "@openzeppelin/contracts/access/Ownable.sol"
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "./TicketNFT.sol"
       ],
       "versionPragmas": [
         "^0.8.19"
@@ -661,8 +662,8 @@
       ]
     },
     "/Users/yairnagar/Desktop/BlockTicket/contracts/TicketNFT.sol": {
-      "lastModificationDate": 1724334607076,
-      "contentHash": "baa222725a4d66f18f43c744a4c45db4",
+      "lastModificationDate": 1725188206013,
+      "contentHash": "585238fe3d55cf3b7e1f0641ec00323d",
       "sourceName": "contracts/TicketNFT.sol",
       "solcConfig": {
         "version": "0.8.19",
@@ -689,9 +690,9 @@
       },
       "imports": [
         "@openzeppelin/contracts/token/ERC721/ERC721.sol",
-        "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol",
-        "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/utils/Counters.sol"
+        "@openzeppelin/contracts/utils/Counters.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
       ],
       "versionPragmas": [
         "^0.8.19"
