@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, Copy, Check, ExternalLink, Loader, AlertCircle, RefreshCw } from 'lucide-react';
+import { ethers } from 'ethers';
 
-function WalletConnection({ onConnected }) {
+const WalletConnection = ({ onWalletConnected }) => {
   const [connectedAddress, setConnectedAddress] = useState(null);
   const [copied, setCopied] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -25,7 +26,7 @@ function WalletConnection({ onConnected }) {
     };
   }, []);
 
-  async function checkIfWalletIsConnected() {
+  const checkIfWalletIsConnected = async () => {
     if (window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
@@ -36,21 +37,21 @@ function WalletConnection({ onConnected }) {
         console.error("An error occurred while checking the wallet connection:", error);
       }
     }
-  }
+  };
 
-  async function checkNetwork() {
+  const checkNetwork = async () => {
     if (window.ethereum) {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       setIsCorrectNetwork(chainId === '0xaa36a7'); // Sepolia testnet
     }
-  }
+  };
 
-  function handleChainChanged(chainId) {
+  const handleChainChanged = (chainId) => {
     setIsCorrectNetwork(chainId === '0xaa36a7'); // Sepolia testnet
     window.location.reload();
-  }
+  };
 
-  async function connectWallet() {
+  const connectWallet = async () => {
     if (window.ethereum) {
       setIsConnecting(true);
       setError(null);
@@ -66,9 +67,9 @@ function WalletConnection({ onConnected }) {
     } else {
       setError("MetaMask not detected. Please install MetaMask and refresh the page.");
     }
-  }
+  };
 
-  function handleConnectionError(error) {
+  const handleConnectionError = (error) => {
     if (error.code === -32002) {
       setError("MetaMask is already processing a connection request. Please open MetaMask to continue.");
     } else if (error.code === 4001) {
@@ -76,17 +77,21 @@ function WalletConnection({ onConnected }) {
     } else {
       setError("Failed to connect. Please ensure MetaMask is unlocked and try again.");
     }
-  }
+  };
 
-  function handleAccountsChanged(accounts) {
+  const handleAccountsChanged = (accounts) => {
     if (accounts.length === 0) {
       setConnectedAddress(null);
-      onConnected(null);
+      if (typeof onWalletConnected === 'function') {
+        onWalletConnected(null);
+      }
     } else if (accounts[0] !== connectedAddress) {
       setConnectedAddress(accounts[0]);
-      onConnected(accounts[0]);
+      if (typeof onWalletConnected === 'function') {
+        onWalletConnected(accounts[0]);
+      }
     }
-  }
+  };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(connectedAddress);
@@ -166,6 +171,6 @@ function WalletConnection({ onConnected }) {
       </div>
     </div>
   );
-}
+};
 
 export default WalletConnection;

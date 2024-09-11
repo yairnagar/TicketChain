@@ -23,6 +23,7 @@
     "ethereum-waffle": "^4.0.10",
     "ethers": "^5.7.2",
     "hardhat": "^2.22.8",
+    "hardhat-gas-reporter": "^2.2.1",
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.10"
   },
